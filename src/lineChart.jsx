@@ -1,47 +1,49 @@
 import * as d3 from 'd3';
 import { useState, useEffect } from 'react';
 
-import { calcInnerDimention } from './utils';
+import { LabeledYAxis } from './labeledYAxis';
+import { LabeledXAxis } from './labeledXAxis';
 
-const CONSTANTS = {
-    IDS:{
-        LINE_CHART_CONTAINER : "line-chart",
-        Y_AXIS_GROUP: "y-axis-group",
-        X_AXIS_GROUP: "x-axis-group",
-    },
-    EVENTS:{
-        RESIZE:"resize"
-    }
-}
+import { calcInnerDimention } from './utils';
+import { CONSTANTS } from './constants';
 
 const intitialSvgDimension = {width:0, height:0};
 const margin = {left:80, right:20, top:20, bottom:80};
 
+const inititalTheme = {
+    xAxis:{
+        labelFill : CONSTANTS.COLOR.BASE_COLOR.TEXT_MAIN,
+        labelFontSize: "1.5em",
+        labelOffset : 50,
+        tickLabelFill: CONSTANTS.COLOR.BASE_COLOR.TEXT_LIGHT,
+        tickLabelFont: "1em",
+        tickLineStroke: CONSTANTS.COLOR.BASE_COLOR.LINE_GREY_ACCENT,
+        domainLineStroke:CONSTANTS.COLOR.BASE_COLOR.LINE_GREY_ACCENT
+    },
+    yAxis:{
+        labelFill : CONSTANTS.COLOR.BASE_COLOR.TEXT_MAIN,
+        labelFontSize: "1.5em",
+        labelOffset : 50,
+        tickLabelFill: CONSTANTS.COLOR.BASE_COLOR.TEXT_LIGHT,
+        tickLabelFont: "1em",
+        tickLineStroke: CONSTANTS.COLOR.BASE_COLOR.LINE_GREY_ACCENT,
+        domainLineStroke: CONSTANTS.COLOR.BASE_COLOR.LINE_GREY_ACCENT
+    }
+};
+
 export const LineChart = () =>{
     const [svgDimension, setSvgDimension] = useState(intitialSvgDimension);
     const [innerDimension, setInnerDimension] = useState(calcInnerDimention(svgDimension, margin));
+    const [theme, _] = useState(inititalTheme);
 
     const getSVGandInnerDimension = () =>{
         const container = document.getElementById(CONSTANTS.IDS.LINE_CHART_CONTAINER);
         const newSvgDimension = {
             width:container.clientWidth,
-            height:container.clientWidth/2.5
+            height:container.clientWidth/2.25
         }
         const newInnerDimension = calcInnerDimention(newSvgDimension, margin);
         return{newSvgDimension, newInnerDimension};
-    }
-
-    const renderAxis = (newInnerDimention) =>{
-        const yAxisGroup = d3.select(`#${CONSTANTS.IDS.Y_AXIS_GROUP}`);
-        const yScale = d3.scaleLinear().domain([0, 10]).range([newInnerDimention.height, 0]);
-        const yAxis = d3.axisLeft(yScale);
-        yAxisGroup.call(yAxis);
-
-
-        const xAxisGroup = d3.select(`#${CONSTANTS.IDS.X_AXIS_GROUP}`);
-        const xScale = d3.scaleLinear().domain([0, 10]).range([0, newInnerDimention.width]);
-        const xAxis = d3.axisBottom(xScale);
-        xAxisGroup.call(xAxis);
     }
 
     const renderChart = () =>{
@@ -59,7 +61,6 @@ export const LineChart = () =>{
         const { newSvgDimension, newInnerDimension } = getSVGandInnerDimension();
         setSvgDimension(newSvgDimension);
         setInnerDimension(newInnerDimension);
-        renderAxis(newInnerDimension);
     }
 
     useEffect(()=>{
@@ -77,24 +78,19 @@ export const LineChart = () =>{
                 height={svgDimension.height} 
                 style={{border:"1px solid black"}}>
                 <g transform={`translate(${margin.left}, ${margin.top})`}>
-                    <g id={CONSTANTS.IDS.Y_AXIS_GROUP}>
-                        <text 
-                            x={-innerDimension.height/2} 
-                            y={-50} 
-                            transform={`rotate(-90)`} 
-                            fill={'black'}>
-                                Y Axis
-                        </text>
-                    </g>
-                    <g id={CONSTANTS.IDS.X_AXIS_GROUP} transform={`translate(${0}, ${innerDimension.height})`}>
-                        <text 
-                            x={innerDimension.width/2} 
-                            y={50} 
-                            fill={'black'}>
-                                X Axis
-                        </text>
-                    </g>
-
+                    <LabeledXAxis
+                        {...theme.xAxis}
+                        innerWidth = {innerDimension.width}
+                        innerHeight = {innerDimension.height}
+                        tickDensity = {70}
+                        labelName = {"X Axis"}
+                    />
+                    <LabeledYAxis
+                        {...theme.yAxis}    
+                        innerHeight = {innerDimension.height}
+                        tickDensity = {70}
+                        labelName = {"Y Axis"}
+                    />
                     <rect
                         width={innerDimension.width} 
                         height={innerDimension.height} 
